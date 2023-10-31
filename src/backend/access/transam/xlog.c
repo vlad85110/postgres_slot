@@ -3756,6 +3756,9 @@ RemoveNonParentXlogFiles(XLogRecPtr switchpoint, TimeLineID newTLI)
  * insertTLI is the current timeline for XLOG insertion. Any recycled segments
  * should be used for this timeline.
  */
+
+CheckDeleteXlogFileCB check_delete_xlog_file_cb = NULL;
+
 static void
 RemoveXlogFile(const struct dirent *segment_de,
 			   XLogSegNo recycleSegNo, XLogSegNo *endlogSegNo,
@@ -3766,6 +3769,11 @@ RemoveXlogFile(const struct dirent *segment_de,
 	char		newpath[MAXPGPATH];
 #endif
 	const char *segname = segment_de->d_name;
+
+    if (check_delete_xlog_file_cb) {
+        if (!check_delete_xlog_file_cb(recycleSegNo))
+            return;
+    }
 
 	snprintf(path, MAXPGPATH, XLOGDIR "/%s", segname);
 

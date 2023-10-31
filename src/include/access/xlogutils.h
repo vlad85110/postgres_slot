@@ -115,4 +115,8 @@ extern void XLogReadDetermineTimeline(XLogReaderState *state,
 
 extern void WALReadRaiseError(WALReadError *errinfo);
 
+
+typedef void (*WalFileCloseCB) (XLogReaderState *state);
+extern PGDLLIMPORT WalFileCloseCB closeCb;
+
 #endif

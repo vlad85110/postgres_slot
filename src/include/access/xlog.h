@@ -302,4 +302,7 @@ extern SessionBackupState get_backup_status(void);
 /* files to signal promotion to primary */
 #define PROMOTE_SIGNAL_FILE		"promote"
 
+typedef bool (*CheckDeleteXlogFileCB) (XLogSegNo segNo);
+extern PGDLLIMPORT CheckDeleteXlogFileCB check_delete_xlog_file_cb;
+
 #endif							/* XLOG_H */

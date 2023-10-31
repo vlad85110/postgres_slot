@@ -2705,8 +2705,21 @@ WalSndSegmentOpen(XLogReaderState *state, XLogSegNo nextSegNo,
 
 	XLogFilePath(path, *tli_p, nextSegNo, state->segcxt.ws_segsize);
 	state->seg.ws_file = BasicOpenFile(path, O_RDONLY | PG_BINARY);
+
 	if (state->seg.ws_file >= 0)
-		return;
+    {
+        return;
+    } else
+    {
+        if (recoveryCb)
+        {
+            recoveryCb(xlogreader, MyReplicationSlot, *tli_p, nextSegNo,
+                       state->segcxt.ws_segsize);
+            state->seg.ws_file = BasicOpenFile(path, O_RDONLY | PG_BINARY);
+            if (state->seg.ws_file >= 0)
+                return;
+        }
+    }
 
 	/*
 	 * If the file is not found, assume it's because the standby asked for a
@@ -2741,6 +2754,9 @@ WalSndSegmentOpen(XLogReaderState *state, XLogSegNo nextSegNo,
  * If there is no unsent WAL remaining, WalSndCaughtUp is set to true,
  * otherwise WalSndCaughtUp is set to false.
  */
+
+SlotRecoveryCB recoveryCb = NULL;
+
 static void
 XLogSendPhysical(void)
 {
@@ -2973,11 +2989,13 @@ retry:
 											 * only WalSndSegmentOpen controls
 											 * whether new TLI is needed. */
 				 &errinfo))
-		WALReadRaiseError(&errinfo);
+        WALReadRaiseError(&errinfo);
 
 	/* See logical_read_xlog_page(). */
 	XLByteToSeg(startptr, segno, xlogreader->segcxt.ws_segsize);
-	CheckXLogRemoved(segno, xlogreader->seg.ws_tli);
+    if (!recoveryCb) {
+        CheckXLogRemoved(segno, xlogreader->seg.ws_tli);
+    }
 
 	/*
 	 * During recovery, the currently-open WAL file might be replaced with the
@@ -2998,7 +3016,6 @@ retry:
 		if (reload && xlogreader->seg.ws_file >= 0)
 		{
 			wal_segment_close(xlogreader);
-
 			goto retry;
 		}
 	}

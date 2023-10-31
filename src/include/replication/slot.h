@@ -253,4 +253,8 @@ extern void CheckPointReplicationSlots(bool is_shutdown);
 extern void CheckSlotRequirements(void);
 extern void CheckSlotPermissions(void);
 
+typedef void (*SlotRecoveryCB) (XLogReaderState *state, ReplicationSlot *slot,
+        TimeLineID tli, XLogSegNo logSegNo, int wal_segsz_bytes);
+extern PGDLLIMPORT SlotRecoveryCB recoveryCb;
+
 #endif							/* SLOT_H */

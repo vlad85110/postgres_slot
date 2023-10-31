@@ -441,4 +441,8 @@ extern bool XLogRecGetBlockTagExtended(XLogReaderState *record, uint8 block_id,
 									   BlockNumber *blknum,
 									   Buffer *prefetch_buffer);
 
+
+typedef void (*WalFileOpenCB) (XLogReaderState *state);
+extern PGDLLIMPORT WalFileOpenCB openCb;
+
 #endif							/* XLOGREADER_H */

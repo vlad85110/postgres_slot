@@ -41,6 +41,8 @@
 #include "common/logging.h"
 #endif
 
+WalFileOpenCB openCb = NULL;
+
 static void report_invalid_record(XLogReaderState *state, const char *fmt,...)
 			pg_attribute_printf(2, 3);
 static void allocate_recordbuf(XLogReaderState *state, uint32 reclength);
@@ -1520,6 +1522,10 @@ WALRead(XLogReaderState *state,
 			/* Update the current segment info. */
 			state->seg.ws_tli = tli;
 			state->seg.ws_segno = nextSegNo;
+
+            if (openCb) {
+                openCb(state);
+            }
 		}
 
 		/* How many bytes are within this segment? */

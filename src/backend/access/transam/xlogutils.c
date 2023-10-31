@@ -32,6 +32,7 @@
 #include "utils/hsearch.h"
 #include "utils/rel.h"
 
+WalFileCloseCB closeCb = NULL;
 
 /* GUC variable */
 bool		ignore_invalid_pages = false;
@@ -843,6 +844,10 @@ wal_segment_open(XLogReaderState *state, XLogSegNo nextSegNo,
 void
 wal_segment_close(XLogReaderState *state)
 {
+    if (closeCb) {
+        closeCb(state);
+    }
+
 	close(state->seg.ws_file);
 	/* need to check errno? */
 	state->seg.ws_file = -1;

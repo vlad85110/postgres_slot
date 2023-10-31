@@ -33,7 +33,7 @@ SUBDIRS = \
 		passwordcheck	\
 		pg_buffercache	\
 		pg_freespacemap \
-		pg_prewarm	\
+		slot_recovery	\
 		pg_stat_statements \
 		pg_surgery	\
 		pg_trgm		\
